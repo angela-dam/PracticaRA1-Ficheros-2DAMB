@@ -13,14 +13,19 @@ import java.math.RoundingMode;
 import java.text.ParseException;
 import java.util.List;
 
+/**
+ * Capa de negocio: calcula importes, decide nombres de fichero y construye los datos a exportar. Gestiona el contenedor.
+ * Delega en el DAO toda la lectura y escritura de ficheros. Gestiona el contenido.
+ */
 public class ProductoService {
 
     private static final String PREFIJO_XML = "inventario_";
     private static final BigDecimal CIEN = BigDecimal.valueOf(100);
-    private final ActivityDAOInt activityDAO;
+
+    private final ActivityDAOInt activity1DAO;
 
     public ProductoService() {
-        this.activityDAO = new ActivityDAOImpl();
+        this.activity1DAO = new ActivityDAOImpl();
     }
 
     /**
@@ -31,23 +36,9 @@ public class ProductoService {
      * @throws JAXBException si el XML no se puede leer
      */
     public List<ProductoEntity> readFile(String fileXml) throws JAXBException {
-        List<ProductoEntity> productos = activityDAO.parsearXML(fileXml);
+        List<ProductoEntity> productos = activity1DAO.parsearXML(fileXml);
         productos.forEach(this::calcularImportes);
         return productos;
-    }
-
-    private void calcularImportes(ProductoEntity entity) {
-        generated.Producto p = entity.getProducto();
-
-        BigDecimal descuento = p.getDescuento().divide(CIEN);
-        BigDecimal precioFinal = p.getPrecio()
-                .subtract(p.getPrecio().multiply(descuento))
-                .setScale(2, RoundingMode.HALF_UP);
-        BigDecimal costes = p.getCostes().getCostesEnvio().add(p.getCostes().getCostesAlmacenaje());
-
-        entity.setPrecioFinal(precioFinal);
-        entity.setCost(costes);
-        entity.setProfit(precioFinal.subtract(costes));
     }
 
     /**
@@ -76,15 +67,15 @@ public class ProductoService {
                 nombreSinExtension(fileXML),
                 fileXML.length());
 
-        activityDAO.escribirResumen(fileTXT, resumen);
+        activity1DAO.escribirResumen(fileTXT, resumen);
     }
 
-    private String nombreSinExtension(File archivo) {
-        String nombre = archivo.getName();
-        int punto = nombre.lastIndexOf('.');
-        return punto > 0 ? nombre.substring(0, punto) : nombre;
-    }
-
+    /**
+     * Devuelve mes y año tal y como aparecen en el nombre del XML (inventario_junio2026.xml -> junio2026).
+     *
+     * @param archivoXML fichero XML
+     * @return mes y año
+     */
     public String crearFechaXML(File archivoXML) {
         return nombreSinExtension(archivoXML).replace(PREFIJO_XML, "");
     }
@@ -100,7 +91,26 @@ public class ProductoService {
      */
     public void exportExcel(String path, String fileXml) throws JAXBException, IOException, ParseException {
         File fileExcel = new File(path, "export_" + crearFechaXML(new File(fileXml)) + ".xlsx");
-        activityDAO.crearExcel(fileExcel, readFile(fileXml));
+        activity1DAO.crearExcel(fileExcel, readFile(fileXml));
     }
 
+    private void calcularImportes(ProductoEntity entity) {
+        generated.Producto p = entity.getProducto();
+
+        BigDecimal descuento = p.getDescuento().divide(CIEN);
+        BigDecimal precioFinal = p.getPrecio()
+                .subtract(p.getPrecio().multiply(descuento))
+                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal costes = p.getCostes().getCostesEnvio().add(p.getCostes().getCostesAlmacenaje());
+
+        entity.setPrecioFinal(precioFinal);
+        entity.setCost(costes);
+        entity.setProfit(precioFinal.subtract(costes));
+    }
+
+    private String nombreSinExtension(File archivo) {
+        String nombre = archivo.getName();
+        int punto = nombre.lastIndexOf('.');
+        return punto > 0 ? nombre.substring(0, punto) : nombre;
+    }
 }

@@ -1,14 +1,16 @@
 package org.educa.dao;
 
 import org.educa.entity.ProductoEntity;
-
-import java.util.List;
-
 import org.educa.entity.SummaryEntity;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+/**
+ * Capa de persistencia: solo sabe leer y escribir ficheros.
+ * No realiza ningun calculo ni decide nombres de ficheros (eso es negocio).
+ */
 public interface ActivityDAOInt {
 
     /**

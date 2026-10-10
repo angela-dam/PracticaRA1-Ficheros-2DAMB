@@ -11,21 +11,19 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import org.educa.entity.SummaryEntity;
 
 import java.io.BufferedWriter;
+
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import java.io.FileOutputStream;
-
-
-public class ActivityDAOImpl implements ActivityDAOInt{
+public class ActivityDAOImpl implements ActivityDAOInt {
 
     private static final String[] CABECERAS = {"Codigo", "Número de Serie", "Precio", "Descuento",
             "Precio Final", "Costes Envío", "Costes Almacenaje", "Beneficio"};
@@ -58,14 +56,6 @@ public class ActivityDAOImpl implements ActivityDAOInt{
             escritor.write(resumen.toPrint());
         }
     }
-
-    private void crearCarpetaDestino(File archivo) throws IOException {
-        File carpeta = archivo.getAbsoluteFile().getParentFile();
-        if (carpeta != null && !carpeta.exists() && !carpeta.mkdirs()) {
-            throw new IOException("No se pudo crear la carpeta " + carpeta);
-        }
-    }
-
 
     @Override
     public void crearExcel(File archivoExcel, List<ProductoEntity> listaProductos) throws IOException {
@@ -148,4 +138,10 @@ public class ActivityDAOImpl implements ActivityDAOInt{
         cell.setCellStyle(estilo);
     }
 
+    private void crearCarpetaDestino(File archivo) throws IOException {
+        File carpeta = archivo.getAbsoluteFile().getParentFile();
+        if (carpeta != null && !carpeta.exists() && !carpeta.mkdirs()) {
+            throw new IOException("No se pudo crear la carpeta " + carpeta);
+        }
+    }
 }
