@@ -28,4 +28,13 @@ public interface ActivityDAOInt {
      * @throws IOException si no se puede escribir el fichero
      */
     void escribirResumen(File archivoTXT, SummaryEntity resumen) throws IOException;
+
+    /**
+     * Escribe los productos en un fichero Excel (xlsx), creando la carpeta destino si no existe.
+     *
+     * @param archivoExcel   fichero de destino
+     * @param listaProductos productos con sus importes ya calculados
+     * @throws IOException si no se puede escribir el fichero
+     */
+    void crearExcel(File archivoExcel, List<ProductoEntity> listaProductos) throws IOException;
 }

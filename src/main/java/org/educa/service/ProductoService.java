@@ -10,12 +10,12 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.List;
 
 public class ProductoService {
 
+    private static final String PREFIJO_XML = "inventario_";
     private static final BigDecimal CIEN = BigDecimal.valueOf(100);
     private final ActivityDAOInt activityDAO;
 
@@ -30,9 +30,6 @@ public class ProductoService {
      * @return lista de {@link ProductoEntity} con sus importes calculados
      * @throws JAXBException si el XML no se puede leer
      */
-    private static final String PREFIJO_XML = "inventario_";
-
-
     public List<ProductoEntity> readFile(String fileXml) throws JAXBException {
         List<ProductoEntity> productos = activityDAO.parsearXML(fileXml);
         productos.forEach(this::calcularImportes);
@@ -92,7 +89,18 @@ public class ProductoService {
         return nombreSinExtension(archivoXML).replace(PREFIJO_XML, "");
     }
 
+    /**
+     * Genera el Excel con los productos del XML.
+     *
+     * @param path carpeta de destino
+     * @param fileXml ruta del fichero XML
+     * @throws JAXBException  si el XML no se puede leer
+     * @throws IOException    si no se puede escribir el Excel
+     * @throws ParseException se mantiene por exigencia de la firma del enunciado
+     */
     public void exportExcel(String path, String fileXml) throws JAXBException, IOException, ParseException {
-        //TODO: Implementar
+        File fileExcel = new File(path, "export_" + crearFechaXML(new File(fileXml)) + ".xlsx");
+        activityDAO.crearExcel(fileExcel, readFile(fileXml));
     }
+
 }
